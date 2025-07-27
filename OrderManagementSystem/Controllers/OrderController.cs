@@ -6,6 +6,7 @@ using OrderManagementSystem.Repositories;
 
 using AutoMapper;
 using OrderManagementSystem.Dots;
+using OrderManagementSystem.Services;
 
 namespace OrderManagementSystem.Controllers
 {
@@ -18,14 +19,16 @@ namespace OrderManagementSystem.Controllers
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
         private readonly IInvoiceRepository _invoiceRepository;
+        private readonly EmailService _emailService;
 
-        public OrderController(IOrderRepository orderRepository, OrderService orderService, IMapper mapper, IProductRepository productRepository , IInvoiceRepository  invoiceRepository )
+        public OrderController(IOrderRepository orderRepository, OrderService orderService, IMapper mapper, IProductRepository productRepository , IInvoiceRepository  invoiceRepository , EmailService emailService)
         {
             _orderRepository = orderRepository;
             _orderService = orderService;
             _mapper = mapper;
             _productRepository = productRepository;
             _invoiceRepository = invoiceRepository;
+            _emailService = emailService;
         }
 
         //[HttpPost]
@@ -163,8 +166,17 @@ namespace OrderManagementSystem.Controllers
             await _orderRepository.UpdateAsync(order);
             await _orderRepository.SaveChangesAsync();
 
+            // ⬇️ إرسال الإيميل
+            if (order.Customer?.Email != null)
+            {
+                string subject = "Order Status Updated";
+                string body = $"Dear {order.Customer.Name},<br>Your order #{order.OrderId} status has been updated to <b>{newStatus}</b>.";
+                await _emailService.SendEmailAsync(order.Customer.Email, subject, body);
+            }
+
             var orderDto = _mapper.Map<OrderDto>(order);
             return Ok(orderDto);
         }
+
     }
 }
