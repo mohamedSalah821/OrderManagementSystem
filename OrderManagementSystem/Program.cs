@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OrderManagementSystem.Profiles;
+using OrderManagementSystem.Services;
 
 
 namespace OrderManagementSystem
@@ -47,6 +48,7 @@ namespace OrderManagementSystem
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            builder.Services.AddScoped<EmailService>();
 
 
 
